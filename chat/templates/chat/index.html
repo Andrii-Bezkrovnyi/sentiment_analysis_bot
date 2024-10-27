@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat { border: 1px solid #ccc; padding: 10px; max-height: 400px; overflow-y: scroll; }
+        .message { margin: 5px; }
+        .user { font-weight: bold; }
+        .bot { color: blue; }
+    </style>
+</head>
+<body>
+
+<h1>Chatbot</h1>
+<div id="chat">
+    {% for message in chat_history %}
+        <div class="message"><span class="{% if message.sender == 'User' %}user{% else %}bot{% endif %}">{{ message.sender }}:</span> {{ message.message }}</div>
+    {% endfor %}
+</div>
+
+<input type="text" id="user_input" placeholder="Type your message...">
+<button id="send_button">Send</button>
+
+{% csrf_token %}
+<script>
+    $(document).ready(function() {
+        $('#send_button').click(function() {
+            let message = $('#user_input').val();
+            // Append the user's message to the chat first
+            $('#chat').append('<div class="message"><span class="user">User:</span> ' + message + '</div>');
+
+            $.ajax({
+                type: "POST",
+                url: '',  // URL of the view handling the chat
+                data: {
+                    message: message,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'  // Include CSRF token
+                },
+                success: function(data) {
+                    // Append the bot's response after the user's message
+                    $('#chat').append('<div class="message"><span class="bot">Bot:</span> ' + data.response + '</div>');
+                    $('#user_input').val('');  // Clear input field
+                    $('#chat').scrollTop($('#chat')[0].scrollHeight);  // Scroll to bottom
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    // Optionally show an error message in the chat
+                }
+            });
+        });
+
+        $('#user_input').keypress(function(e) {
+            if (e.which == 13) {  // Enter key pressed
+                $('#send_button').click();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

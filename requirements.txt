@@ -1,0 +1,4 @@
+textblob~=0.18.0.post0
+numpy~=2.1.2
+nltk~=3.9.1
+Django~=5.1.2
